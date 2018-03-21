@@ -3,6 +3,8 @@ var common = require("./common");
 var fs = require("fs");
 var app = express();
 var url = require('url');
+var nodemailer = require("nodemailer");
+var formidable = require('formidable');
 app.get('/', (req,res) => res.send(200,{
 	date : common.getDate(),
 	currDate : common.currDate(),
@@ -63,5 +65,52 @@ var qdata = q.query; //returns an object: { year: 2017, month: 'february' }
 console.log(qdata.Name); //returns 'february'
 return res.send(200,"Data printed");
 });
+
+app.get('/uploadFile',(req,res) =>{
+  res.writeHead(200, {'Content-Type': 'text/html'});
+  res.write('<form action="fileupload" method="post" enctype="multipart/form-data">');
+  res.write('<input type="file" name="filetoupload"><br>');
+  res.write('<input type="submit">');
+  res.write('</form>');
+  return res.end();
+});
+app.post('/fileupload',(req,res) =>{
+var form = formidable.IncomingForm();
+form.parse(req, (err,fields,file) =>{
+	res.write("File upload");
+	res.end();
+})
+})
+
+app.get('/sendMail',(req,res) =>{
+var transport = nodemailer.createTransport({
+	service: "gmail",
+	host: 'smtp.gmail.com',
+	auth:{
+		user : "prabusendhil@gmail.com",
+		pass:"Chennai1991"
+	}
+
+});
+
+var mailData = {
+	from: "prabusendhil@gmail.com",
+	to: "gomathikalaivani.tech@gmail.com",
+	subject: "Dont reply. It is system generated mail",
+	text : "All is well"
+}
+//*****************
+//for send mail to someone need to enable "Allow less secure apps: ON"
+//*****************
+transport.sendMail(mailData,(error,info) => {
+	if(error) {
+		console.log("error is :" +error);
+	}else{
+		console.log("Email sent: "+info.response);
+		res.send("Mail sent. Please read your inbox")
+	}
+});
+
+})
 
 app.listen(3000, () => console.log("Application listening port 3000"));
